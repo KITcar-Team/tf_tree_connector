@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_base_link" args="5 -10 0  0 0 0  map base_link"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="world_to_reference_base_link" args="1 4 0  0 0 0  reference_map reference_base_link"/>
+  <node pkg="tf_tree_connector" type="tf_tree_connector.py" name="tree_connector">
+  </node>
+  <test test-name="tf_tree_connector_test" pkg="tf_tree_connector" type="tf_tree_connector_test.py"/>
+</launch>

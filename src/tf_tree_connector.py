@@ -1,0 +1,57 @@
+#!/usr/bin/env python
+
+# Import required Python code.
+import rospy
+import tf2_ros
+import geometry_msgs.msg
+from tf2_geometry_msgs import transform_to_kdl
+
+
+# Import custom message data.
+from std_msgs.msg import Empty
+
+def do_transform_transform(trafo, transform):
+    f = transform_to_kdl(transform) *transform_to_kdl(trafo)
+    res = geometry_msgs.msg.TransformStamped()
+    res.transform.translation.x = f[(0, 3)]
+    res.transform.translation.y = f[(1, 3)]
+    res.transform.translation.z = f[(2, 3)]
+    (res.transform.rotation.x, res.transform.rotation.y, res.transform.rotation.z, res.transform.rotation.w) = f.M.GetQuaternion()
+    res.header = transform.header
+    return res
+
+
+class TF2TreeConnector(object):
+    def __init__(self):
+        self.broadcaster = tf2_ros.StaticTransformBroadcaster()
+        self.tf_buffer = tf2_ros.Buffer()
+        self.listener = tf2_ros.TransformListener(self.tf_buffer)
+        self.refence_map_frame = rospy.get_param('~refence_map_frame', 'reference_map')
+        self.reference_base_link_frame = rospy.get_param('~reference_base_link', 'reference_base_link')
+        self.map_frame = rospy.get_param('~map_frame', 'map')
+        self.base_link_frame = rospy.get_param('~base_link', 'base_link')
+
+    def connect_trees(self, msg=None):
+        rate = rospy.Rate(1.0)
+        while not rospy.is_shutdown():
+            try:
+                trans = self.tf_buffer.lookup_transform(self.refence_map_frame, self.reference_base_link_frame, rospy.Time())
+                trans = do_transform_transform(trans, self.tf_buffer.lookup_transform(self.base_link_frame, self.map_frame, rospy.Time()))
+                break
+            except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+                rospy.loginfo("No trafo found!")
+                rate.sleep()
+                continue
+            rate.sleep()
+
+        rospy.loginfo("Trafo found!")
+        trans.header.frame_id = self.refence_map_frame
+        trans.child_frame_id = self.map_frame
+        self.broadcaster.sendTransform(trans)
+
+if __name__ == '__main__':
+    rospy.init_node('tf_tree_connector', anonymous=True)
+    blub = TF2TreeConnector()
+    blub.connect_trees()
+    reset_subscriber = rospy.Subscriber("~reset", Empty, blub.connect_trees)
+    rospy.spin()
