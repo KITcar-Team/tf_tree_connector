@@ -30,16 +30,17 @@ class TF2TreeConnector(object):
         self.reference_base_link_frame = rospy.get_param('~reference_base_link', 'reference_base_link')
         self.map_frame = rospy.get_param('~map_frame', 'map')
         self.base_link_frame = rospy.get_param('~base_link', 'base_link')
+        self.lookup_rate = rospy.get_param('~lookup_rate', 100.0)
 
     def connect_trees(self, msg=None):
-        rate = rospy.Rate(1.0)
+        rate = rospy.Rate(self.lookup_rate)
         while not rospy.is_shutdown():
             try:
                 trans = self.tf_buffer.lookup_transform(self.reference_map_frame, self.reference_base_link_frame, rospy.Time())
                 trans = do_transform_transform(trans, self.tf_buffer.lookup_transform(self.base_link_frame, self.map_frame, rospy.Time()))
                 break
             except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-                rospy.loginfo("No trafo found!")
+                rospy.loginfo_throttle(1, "No trafo found!")
                 rate.sleep()
                 continue
             rate.sleep()
