@@ -26,7 +26,7 @@ class TF2TreeConnector(object):
         self.broadcaster = tf2_ros.StaticTransformBroadcaster()
         self.tf_buffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.tf_buffer)
-        self.refence_map_frame = rospy.get_param('~refence_map_frame', 'reference_map')
+        self.reference_map_frame = rospy.get_param('~reference_map_frame', 'reference_map')
         self.reference_base_link_frame = rospy.get_param('~reference_base_link', 'reference_base_link')
         self.map_frame = rospy.get_param('~map_frame', 'map')
         self.base_link_frame = rospy.get_param('~base_link', 'base_link')
@@ -35,7 +35,7 @@ class TF2TreeConnector(object):
         rate = rospy.Rate(1.0)
         while not rospy.is_shutdown():
             try:
-                trans = self.tf_buffer.lookup_transform(self.refence_map_frame, self.reference_base_link_frame, rospy.Time())
+                trans = self.tf_buffer.lookup_transform(self.reference_map_frame, self.reference_base_link_frame, rospy.Time())
                 trans = do_transform_transform(trans, self.tf_buffer.lookup_transform(self.base_link_frame, self.map_frame, rospy.Time()))
                 break
             except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
@@ -45,7 +45,7 @@ class TF2TreeConnector(object):
             rate.sleep()
 
         rospy.loginfo("Trafo found!")
-        trans.header.frame_id = self.refence_map_frame
+        trans.header.frame_id = self.reference_map_frame
         trans.child_frame_id = self.map_frame
         self.broadcaster.sendTransform(trans)
 
