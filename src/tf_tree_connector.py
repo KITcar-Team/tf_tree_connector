@@ -52,7 +52,7 @@ class TF2TreeConnector(object):
 
 if __name__ == '__main__':
     rospy.init_node('tf_tree_connector', anonymous=True)
-    blub = TF2TreeConnector()
-    blub.connect_trees()
-    reset_subscriber = rospy.Subscriber("~reset", Empty, blub.connect_trees)
+    TREE_CONNECTOR = TF2TreeConnector()
+    TREE_CONNECTOR.connect_trees()
+    RESET_SUBSCRIBER = rospy.Subscriber("~reset", Empty, TREE_CONNECTOR.connect_trees)
     rospy.spin()
