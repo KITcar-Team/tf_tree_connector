@@ -26,10 +26,10 @@ class TF2TreeConnector(object):
         self.broadcaster = tf2_ros.StaticTransformBroadcaster()
         self.tf_buffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.tf_buffer)
-        self.reference_map_frame = rospy.get_param('~reference_map_frame', 'reference_map')
-        self.reference_base_link_frame = rospy.get_param('~reference_base_link', 'reference_base_link')
-        self.map_frame = rospy.get_param('~map_frame', 'map')
-        self.base_link_frame = rospy.get_param('~base_link', 'base_link')
+        self.reference_map_frame = rospy.get_param('~reference_map_frame', 'map_stargazer')
+        self.reference_base_link_frame = rospy.get_param('~reference_base_link', 'cam_stargazer')
+        self.map_frame = rospy.get_param('~map_frame', 'odom')
+        self.base_link_frame = rospy.get_param('~base_link', 'vehicle')
         self.lookup_rate = rospy.get_param('~lookup_rate', 100.0)
 
     def connect_trees(self, msg=None):
